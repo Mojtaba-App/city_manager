@@ -1,0 +1,21 @@
+{
+  "name": "city-manager",
+  "version": "1.0.0",
+  "private": true,
+  "description": "پلتفرم سازمانی مدیریت بازآفرینی شهری",
+  "scripts": {
+    "dev": "pnpm --filter @city-manager/shared build && pnpm --parallel --filter @city-manager/api --filter @city-manager/web dev",
+    "dev:api": "pnpm --filter @city-manager/api dev",
+    "dev:web": "pnpm --filter @city-manager/web dev",
+    "build": "pnpm --filter @city-manager/shared build && pnpm --filter @city-manager/api-client build && pnpm --filter @city-manager/api build && pnpm --filter @city-manager/web build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm --filter @city-manager/shared test && pnpm --filter @city-manager/api test && pnpm --filter @city-manager/api-client test",
+    "test:e2e": "pnpm --filter @city-manager/web test:e2e",
+    "db:migrate": "pnpm --filter @city-manager/api migration:run"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.0"
+}

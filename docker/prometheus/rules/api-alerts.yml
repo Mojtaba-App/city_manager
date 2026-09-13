@@ -1,0 +1,20 @@
+groups:
+  - name: city-manager-api
+    rules:
+      - alert: CityManagerApiDown
+        expr: up{job="city-manager-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: City Manager API is down
+          description: Prometheus cannot scrape /api/v1/health/metrics for 2 minutes.
+
+      - alert: CityManagerHighProcessRss
+        expr: process_resident_memory_bytes{job="city-manager-api"} > 1500000000
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: API RSS memory is high
+          description: Resident memory exceeded 1.5GB for 10 minutes.

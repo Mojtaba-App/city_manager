@@ -1,0 +1,67 @@
+/**
+ * City Manager — shared design tokens (CSS variables).
+ * Source of truth for light/dark theme surfaces used by apps/web.
+ */
+
+:root {
+  --color-primary: #0f4c5c;
+  --color-primary-dark: #0a3440;
+  --color-primary-soft: #e6f1f4;
+  --color-accent: #c46b2b;
+  --color-bg: #eef2f5;
+  --color-surface: #ffffff;
+  --color-text: #15202b;
+  --color-text-muted: #5b6b7a;
+  --color-label: #3d4d5c;
+  --color-placeholder: #7a8b9a;
+  --color-input: #ffffff;
+  --color-border: #d7e0e7;
+  --color-danger: #b42318;
+  --color-success: #0f7a4c;
+  --color-warning: #b54708;
+  --color-info: #175cd3;
+  --color-purple: #6d28d9;
+  --color-draft: #475569;
+  --sidebar-width: 268px;
+  --sidebar-collapsed: 72px;
+  --header-height: 64px;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 8px 24px rgba(16, 24, 40, 0.04);
+  --font-sans: 'Vazirmatn', Tahoma, sans-serif;
+  --header-bg: rgba(255, 255, 255, 0.92);
+  --chip-hover: #d9ebf0;
+  --toast-bg: #ffffff;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+}
+
+html[data-theme='dark'] {
+  color-scheme: dark;
+  --color-primary: #8ad4e2;
+  --color-primary-dark: #a6e0ea;
+  --color-primary-soft: rgba(138, 212, 226, 0.18);
+  --color-accent: #f0a066;
+  --color-bg: #0f161c;
+  --color-surface: #18222b;
+  --color-text: #f5f8fb;
+  --color-text-muted: #c8d4de;
+  --color-label: #e8eef4;
+  --color-placeholder: #a7b6c3;
+  --color-input: #121a21;
+  --color-border: #2a3844;
+  --color-danger: #ff8f86;
+  --color-success: #5ee4a4;
+  --color-warning: #ffc07a;
+  --color-info: #8cbcff;
+  --color-purple: #d2b8ff;
+  --color-draft: #c5d0da;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 12px 28px rgba(0, 0, 0, 0.28);
+  --header-bg: rgba(24, 34, 43, 0.92);
+  --chip-hover: rgba(138, 212, 226, 0.28);
+  --toast-bg: #1c2833;
+}

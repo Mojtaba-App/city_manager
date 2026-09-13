@@ -1,0 +1,45 @@
+name: CD Stage
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*-rc*"
+      - "v*-stage*"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-stage:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Build release artifacts
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+
+      - name: Deploy (SSH placeholder)
+        env:
+          SSH_HOST: ${{ secrets.STAGE_SSH_HOST }}
+          SSH_USER: ${{ secrets.STAGE_SSH_USER }}
+          SSH_KEY: ${{ secrets.STAGE_SSH_KEY }}
+        run: |
+          echo "Deploy stage: copy build output, run migrations, restart api/web processes"
+          echo "pnpm db:migrate && pnpm --filter @city-manager/api start"
+          echo "curl -fsS \$STAGE_URL/api/v1/health/ready"
+          # Wire real SSH when secrets are provisioned:
+          # printf '%s' "$SSH_KEY" > key && chmod 600 key
+          # ssh -i key "$SSH_USER@$SSH_HOST" 'cd /opt/city-manager && ./deploy-stage.sh'

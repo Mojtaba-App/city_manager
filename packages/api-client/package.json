@@ -1,0 +1,23 @@
+{
+  "name": "@city-manager/api-client",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "lint": "tsc --noEmit",
+    "test": "jest --config jest.config.json",
+    "gen:types": "openapi-typescript ./openapi.json -o ./src/generated/schema.ts"
+  },
+  "dependencies": {
+    "@city-manager/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "jest": "^29.7.0",
+    "openapi-typescript": "^7.4.4",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.7.2"
+  }
+}

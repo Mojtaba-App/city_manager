@@ -1,0 +1,45 @@
+name: CD Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Release tag to deploy (e.g. v1.2.0)"
+        required: true
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-prod:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Build release artifacts
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+
+      - name: Pre-deploy backup + migrate + restart
+        run: |
+          TAG="${{ github.event.inputs.release_tag || github.ref_name }}"
+          echo "1) Trigger backup on prod host (infra/backup/backup.sh)"
+          echo "2) Deploy build for tag $TAG"
+          echo "3) pnpm db:migrate"
+          echo "4) Restart api/web processes behind reverse proxy"
+          echo "5) Smoke: /api/v1/health/live && /api/v1/health/ready"
+          echo "6) Rollback = redeploy previous tag + restore dump if migrate failed"

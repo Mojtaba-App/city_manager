@@ -1,0 +1,36 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testRegex": ".*\\.spec\\.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": [
+      "ts-jest",
+      {
+        "tsconfig": {
+          "module": "commonjs",
+          "declaration": false,
+          "emitDecoratorMetadata": true,
+          "experimentalDecorators": true,
+          "allowSyntheticDefaultImports": true,
+          "target": "ES2022",
+          "esModuleInterop": true,
+          "strictNullChecks": true,
+          "noImplicitAny": true,
+          "skipLibCheck": true
+        }
+      }
+    ]
+  },
+  "collectCoverageFrom": [
+    "src/modules/security/services/**/*.ts",
+    "src/modules/case/services/pii-crypto.service.ts",
+    "src/modules/storage/**/*.ts",
+    "src/common/guards/**/*.ts",
+    "!**/*.spec.ts"
+  ],
+  "coverageDirectory": "./coverage",
+  "testEnvironment": "node",
+  "moduleNameMapper": {
+    "^@city-manager/shared$": "<rootDir>/../../packages/shared/src/index.ts"
+  }
+}

@@ -1,0 +1,95 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+.next/
+.turbo/
+*.tsbuildinfo
+out/
+build/
+coverage/
+.nyc_output/
+*.lcov
+
+# Environment & secrets (never commit real secrets)
+.env
+.env.local
+.env.*.local
+.env.stage
+.env.prod
+.env.development
+.env.production
+!.env.example
+!.env.stage.example
+!.env.prod.example
+!.env.*.example
+*.pem
+*.p12
+*.key
+credentials.json
+service-account*.json
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/
+
+# IDE / editor / local AI tooling
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.cursor/
+.cursorrules
+AGENTS.md
+.agent/
+.agents/
+.claude/
+.codex/
+.windsurf/
+.gemini/
+AgentStores/
+agent-transcripts/
+*.canvas.tsx
+
+# Docker local observability data (if bind-mounted)
+docker/prometheus/data/
+docker/grafana/data/
+docker/loki/data/
+docker/alloy/data/
+
+# Local uploads / temp / dumps
+uploads/
+tmp/
+temp/
+*.dump
+*.sql.gz
+*.bak
+*.tmp
+.cache/
+
+# Optional local overrides
+docker-compose.override.yml
+.env.override
+
+# Playwright / e2e artifacts
+test-results/
+playwright-report/
+blob-report/
+
+# Misc
+*.orig
+*.rej
