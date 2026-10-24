@@ -1,3 +1,5 @@
+import { toLatinDigits } from './persian-digits';
+
 export const SMS_IR_DEFAULT_BASE = 'https://api.sms.ir/v1';
 
 export const SMS_PROVIDER_OPTIONS = [
@@ -20,12 +22,32 @@ export function smsProviderDefaultBase(provider?: string): string {
   return row?.defaultBaseUrl ?? '';
 }
 
+/** Normalize Iranian mobile to `09xxxxxxxxx` (11 digits). */
 export function normalizeIranMobile(raw: string): string {
-  const digits = String(raw ?? '').replace(/\D/g, '');
+  const digits = toLatinDigits(String(raw ?? '')).replace(/\D/g, '');
   if (digits.startsWith('98') && digits.length >= 12) return `0${digits.slice(2, 12)}`;
   if (digits.startsWith('9') && digits.length === 10) return `0${digits}`;
   if (digits.length > 11) return digits.slice(-11);
   return digits;
+}
+
+/** True when normalized form is a valid Iranian mobile (09 + 9 digits). */
+export function isIranMobile(raw: string): boolean {
+  return /^09\d{9}$/.test(normalizeIranMobile(raw));
+}
+
+/** Common storage variants for DB lookup (OR match). */
+export function iranMobileLookupVariants(raw: string): string[] {
+  const n = normalizeIranMobile(raw);
+  if (!/^09\d{9}$/.test(n)) return [];
+  const national = n.slice(1); // 9xxxxxxxxx
+  return Array.from(new Set([
+    n,
+    national,
+    `+98${national}`,
+    `98${national}`,
+    `0${national}`,
+  ]));
 }
 
 function trimBase(url: string | undefined, fallback = ''): string {

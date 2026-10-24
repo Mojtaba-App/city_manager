@@ -144,12 +144,18 @@ export class ChangePasswordDto {
 }
 
 export class ForgotPasswordDto {
-  @ApiProperty({ description: 'ایمیل یا نام کاربری' })
-  @Transform(pickIdentifier)
-  @IsString()
-  @MinLength(2)
-  @MaxLength(320)
-  identifier!: string;
+  @ApiProperty({
+    example: '09123456789',
+    description: 'شماره همراه ثبت‌شده در حساب کاربر',
+  })
+  @Transform(({ value, obj }: { value?: string; obj: Record<string, unknown> }) => {
+    const raw = value ?? obj.phone ?? obj.identifier;
+    return typeof raw === 'string' ? raw.trim() : raw;
+  })
+  @IsString({ message: 'شماره همراه الزامی است' })
+  @MinLength(10, { message: 'شماره همراه نامعتبر است' })
+  @MaxLength(20)
+  phone!: string;
 }
 
 export class ResetPasswordDto {

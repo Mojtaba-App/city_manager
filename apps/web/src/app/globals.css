@@ -10453,3 +10453,365 @@ html[data-theme='dark'] .ui-spinner {
   align-items: center;
   margin-bottom: 0.25rem;
 }
+
+/* -- Material Design 3 login surface --------------------------------------- */
+.md-login-page {
+  --md-primary: #0f766e;
+  --md-primary-container: #ccfbf1;
+  --md-on-primary: #ffffff;
+  --md-surface: #fffbfe;
+  --md-on-surface: #1c1b1f;
+  --md-on-surface-variant: #49454f;
+  --md-outline: #79747e;
+  --md-error: #b3261e;
+  --md-radius: 28px;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  font-family: Vazirmatn, system-ui, sans-serif;
+}
+
+.md-elevation-2 {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    0 2px 6px 2px rgba(0, 0, 0, 0.15);
+}
+
+.md-elevation-3 {
+  box-shadow:
+    0 4px 8px 3px rgba(0, 0, 0, 0.15),
+    0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.md-login-shell {
+  width: 100%;
+  max-width: 440px;
+  z-index: 1;
+}
+
+.md-login-card {
+  background: var(--md-surface);
+  color: var(--md-on-surface);
+  border-radius: var(--md-radius);
+  padding: 2rem 1.75rem 1.5rem;
+  animation: md-login-enter 0.35s cubic-bezier(0.2, 0, 0, 1);
+}
+
+@keyframes md-login-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.md-login-brand {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.md-login-brand-icon {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  margin: 0 auto 0.75rem;
+  display: block;
+}
+
+.md-login-brand-mark {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 0.75rem;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.04em;
+}
+
+.md-login-brand-title {
+  margin: 0;
+  font-size: 1.55rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--md-on-surface);
+  letter-spacing: -0.01em;
+}
+
+.md-login-brand-sub {
+  margin: 0.35rem 0 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--md-on-surface-variant);
+}
+
+.md-login-tagline {
+  margin: 0.75rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: var(--md-on-surface-variant);
+}
+
+.md-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.md-login-support {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--md-on-surface-variant);
+  text-align: center;
+}
+
+.md-field {
+  position: relative;
+  margin: 0.55rem 0 0.85rem;
+}
+
+.md-field-input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 56px;
+  padding: 1rem 0.9rem 0.35rem;
+  border: 1px solid var(--md-outline);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--md-on-surface);
+  font: inherit;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  direction: ltr;
+  text-align: left;
+}
+
+.md-field-input:focus {
+  border-color: var(--md-primary);
+  border-width: 2px;
+  padding: calc(1rem - 1px) calc(0.9rem - 1px) calc(0.35rem - 1px);
+  box-shadow: inset 0 0 0 0 transparent;
+}
+
+.md-field-label {
+  position: absolute;
+  right: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0 0.25rem;
+  background: var(--md-surface);
+  color: var(--md-on-surface-variant);
+  font-size: 1rem;
+  pointer-events: none;
+  transition: top 0.15s ease, font-size 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.md-field-input:focus + .md-field-label,
+.md-field-input:not(:placeholder-shown) + .md-field-label {
+  top: 0;
+  font-size: 0.75rem;
+  color: var(--md-primary);
+  transform: translateY(-50%);
+}
+
+.md-field-password .md-field-input {
+  padding-left: 4.25rem;
+}
+
+.md-field-trailing {
+  position: absolute;
+  left: 0.35rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: var(--md-primary);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.4rem 0.55rem;
+  border-radius: 999px;
+}
+
+.md-field-hint {
+  display: block;
+  margin: 0.35rem 0.15rem 0;
+  font-size: 0.75rem;
+  color: var(--md-on-surface-variant);
+  line-height: 1.5;
+}
+
+.md-field-error .md-field-input {
+  border-color: var(--md-error);
+}
+
+.md-field-error .md-field-label {
+  color: var(--md-error);
+}
+
+.md-field-error-text {
+  margin: 0.3rem 0.15rem 0;
+  font-size: 0.75rem;
+  color: var(--md-error);
+}
+
+.md-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.65rem 1.25rem;
+  border-radius: 999px;
+  border: 0;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: background 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.md-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.md-btn-filled {
+  width: 100%;
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.md-btn-filled:hover:not(:disabled) {
+  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.35);
+  filter: brightness(1.05);
+}
+
+.md-btn-outlined {
+  background: transparent;
+  color: var(--md-primary);
+  border: 1px solid var(--md-outline);
+}
+
+.md-btn-text {
+  background: transparent;
+  color: var(--md-primary);
+  width: 100%;
+}
+
+.md-btn-text:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--md-primary) 8%, transparent);
+}
+
+.md-login-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+}
+
+.md-alert {
+  margin: 0.35rem 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.md-alert-error {
+  background: #fceeee;
+  color: var(--md-error);
+}
+
+.md-alert-info {
+  background: var(--md-primary-container);
+  color: #115e59;
+}
+
+.md-login-dev {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0.5rem 0;
+  padding: 0.65rem 0.8rem;
+  border-radius: 12px;
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  font-size: 0.82rem;
+}
+
+.md-login-dev code {
+  font-family: ui-monospace, monospace;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.md-login-phone-masked {
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin: 0 0 1rem;
+  direction: ltr;
+}
+
+.md-login-otp-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.md-login-otp-card {
+  width: min(420px, 100%);
+  background: var(--md-surface);
+  border-radius: var(--md-radius);
+  padding: 1.75rem 1.5rem 1.35rem;
+  animation: md-login-enter 0.28s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.md-login-otp-card h2 {
+  margin: 0 0 0.35rem;
+  text-align: center;
+  font-size: 1.35rem;
+}
+
+.md-login-version {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  z-index: 2;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 0.28rem 0.7rem;
+  direction: ltr;
+}
+
+@media (max-width: 480px) {
+  .md-login-card {
+    padding: 1.5rem 1.15rem 1.25rem;
+    border-radius: 20px;
+  }
+}

@@ -149,7 +149,7 @@ export class MembersService {
 
     if (nextRole === MemberRole.HEAD) {
       await this.householdRepo.update(householdId, { headMemberId: saved.id });
-    } else if (wasHead && nextRole !== MemberRole.HEAD) {
+    } else if (wasHead) {
       const otherHead = await this.repo.findOne({
         where: {
           householdId,

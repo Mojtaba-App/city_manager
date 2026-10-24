@@ -16,18 +16,14 @@ import { AuditModule } from '../audit/audit.module';
 import { CaseModule } from '../case/case.module';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { CsrfGuard } from '../../common/guards/csrf.guard';
+import { buildJwtModuleOptions } from '../../common/jwt-module-options';
 
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET'),
-        signOptions: {
-          expiresIn: config.get<string>('JWT_ACCESS_EXPIRES_IN', '15m'),
-        },
-      }),
+      useFactory: (config: ConfigService) => buildJwtModuleOptions(config),
     }),
     TypeOrmModule.forFeature([User, RefreshToken]),
     AuditModule,

@@ -50,7 +50,7 @@ export const AnalyticsHeatmap = forwardRef<AnalyticsHeatmapHandle, {
       },
       center: [48.669, 31.3203],
       zoom: 12,
-      preserveDrawingBuffer: true,
+      canvasContextAttributes: { preserveDrawingBuffer: true },
     });
     map.addControl(new maplibregl.NavigationControl(), 'top-left');
     mapRef.current = map;

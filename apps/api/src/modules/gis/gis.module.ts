@@ -12,6 +12,7 @@ import { NeighborhoodsService } from './services/neighborhoods.service';
 import { FabricsService } from './services/fabrics.service';
 import { DwellingsService } from './services/dwellings.service';
 import { GeoJsonService } from './services/geojson.service';
+import { MvtService } from './services/mvt.service';
 import { SpatialSearchService } from './services/spatial-search.service';
 import { IngestService } from './services/ingest.service';
 import { GeometryService } from './services/geometry.service';

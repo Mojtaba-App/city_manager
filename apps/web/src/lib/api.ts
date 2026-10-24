@@ -187,10 +187,10 @@ export async function changePassword(currentPassword: string, newPassword: strin
   });
 }
 
-export async function forgotPassword(identifier: string) {
-  return apiFetch<{ message: string }>('/auth/forgot-password', {
+export async function forgotPassword(phone: string) {
+  return apiFetch<{ message: string; devPassword?: string }>('/auth/forgot-password', {
     method: 'POST',
-    body: JSON.stringify({ identifier }),
+    body: JSON.stringify({ phone }),
   });
 }
 

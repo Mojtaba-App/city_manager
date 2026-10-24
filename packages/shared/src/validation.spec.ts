@@ -63,8 +63,8 @@ describe('toIranMobile / validateIranMobile', () => {
   });
 
   it('rejects landline and short numbers', () => {
-    expect(validateIranMobile('02112345678', false)).toBe('شماره موبایل نامعتبر است');
-    expect(validateIranMobile('0912', true)).toBe('شماره موبایل نامعتبر است');
+    expect(validateIranMobile('02112345678', false)).toBe('شماره موبایل نامعتبر است (مثال: ۰۹۱۲۳۴۵۶۷۸۹)');
+    expect(validateIranMobile('0912', true)).toBe('شماره موبایل نامعتبر است (مثال: ۰۹۱۲۳۴۵۶۷۸۹)');
     expect(validateIranMobile('', false)).toBeUndefined();
     expect(validateIranMobile('09123456789')).toBeUndefined();
   });

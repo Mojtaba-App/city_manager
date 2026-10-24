@@ -22,6 +22,7 @@ import { SecurityOverviewService } from './services/security-overview.service';
 import { PiiAccessService } from './services/pii-access.service';
 import { SecurityController, OauthTokenController } from './security.controller';
 import { AuditInterceptor } from '../../common/interceptors/audit.interceptor';
+import { buildJwtModuleOptions } from '../../common/jwt-module-options';
 
 @Module({
   imports: [
@@ -40,12 +41,7 @@ import { AuditInterceptor } from '../../common/interceptors/audit.interceptor';
     ]),
     JwtModule.registerAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET'),
-        signOptions: {
-          expiresIn: config.get<string>('JWT_ACCESS_EXPIRES_IN', '15m'),
-        },
-      }),
+      useFactory: (config: ConfigService) => buildJwtModuleOptions(config),
     }),
     AuditModule,
   ],

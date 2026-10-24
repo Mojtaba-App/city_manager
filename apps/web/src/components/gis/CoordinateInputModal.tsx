@@ -8,6 +8,7 @@ import {
   UtmHemisphere,
   wgs84ToUtm,
 } from '@city-manager/shared';
+import type { Geometry } from 'geojson';
 import { pointsToGeometry, LngLat } from './draw-geometry';
 
 const WGS84_SAMPLE = '48.669, 31.320\n48.675, 31.320\n48.675, 31.326\n48.669, 31.326';
@@ -31,7 +32,7 @@ export function CoordinateInputModal({
   onApply,
   onClose,
 }: {
-  onApply: (geometry: GeoJSON.Geometry) => void;
+  onApply: (geometry: Geometry) => void;
   onClose: () => void;
 }) {
   const [system, setSystem] = useState<CoordSystem>('wgs84');

@@ -10,7 +10,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import {
@@ -22,7 +22,10 @@ import {
   SystemRole,
   AuditOutcome,
   AuditSeverity,
+  iranMobileLookupVariants,
   maskPhoneForDisplay,
+  toIranMobile,
+  validateIranMobile,
   validateUserPassword,
 } from '@city-manager/shared';
 import { User } from '../users/entities/user.entity';
@@ -279,41 +282,73 @@ export class AuthService {
     return { success: true };
   }
 
-  async forgotPassword(dto: ForgotPasswordDto): Promise<{ success: true; message: string }> {
-    const user = await this.findUserByIdentifier(dto.identifier);
-    // Always same response to avoid user enumeration
-    const message = 'اگر حسابی با این مشخصات وجود داشته باشد، لینک بازیابی ارسال می‌شود.';
-    if (!user || !user.isActive || !user.email) return { success: true, message };
-
-    const token = crypto.randomBytes(32).toString('hex');
-    const ttlSec = 30 * 60;
-    const payload = { userId: user.id, exp: Date.now() + ttlSec * 1000 };
-    if (this.redis?.enabled) {
-      await this.redis.setJson(`cm:pwdreset:${token}`, payload, ttlSec);
-    } else {
-      this.passwordResetTokens.set(token, payload);
+  async forgotPassword(
+    dto: ForgotPasswordDto,
+  ): Promise<{ success: true; message: string; devPassword?: string }> {
+    const phoneErr = validateIranMobile(dto.phone, true);
+    if (phoneErr) {
+      throw new BadRequestException(phoneErr);
     }
 
-    const appOrigin = this.configService.get<string>('CORS_ORIGIN', 'http://localhost:3000').split(',')[0].trim();
-    const resetUrl = `${appOrigin}/login?reset=${token}`;
-    if (user.organizationId) {
-      await this.messaging.sendEvent(user.organizationId, user.id, {
-        event: 'password_reset',
-        channel: MessageChannel.EMAIL,
-        recipient: user.email,
-        templateCode: 'notify',
-        subject: 'بازیابی رمز عبور',
-        vars: { message: `برای تنظیم رمز جدید به این نشانی بروید: ${resetUrl}` },
-      });
+    const user = await this.findUserByPhone(dto.phone);
+    if (!user || !user.isActive || !user.phone || !user.organizationId) {
+      throw new BadRequestException('این شماره همراه در سامانه ثبت نشده است');
     }
+
+    const tempPassword = this.generateTempPassword();
+    const exposePlain =
+      this.configService.get<string>('NODE_ENV') !== 'production'
+      || this.configService.get<string>('SHOW_LOGIN_OTP_IN_DEV') === '1';
+
+    const outbox = await this.messaging.sendEvent(user.organizationId, user.id, {
+      event: 'password_reset',
+      channel: MessageChannel.SMS,
+      recipient: user.phone,
+      templateCode: 'notify',
+      vars: {
+        message: `رمز عبور موقت سامانه مدیر شهر: ${tempPassword}\nپس از ورود، رمز را تغییر دهید.`,
+      },
+    });
+
+    const smsOk =
+      !!outbox
+      && outbox.status !== MessageOutboxStatus.FAILED
+      && outbox.status !== MessageOutboxStatus.SKIPPED;
+
+    if (!smsOk) {
+      if (!exposePlain) {
+        this.logger.warn(
+          `Password-reset SMS failed for user ${user.id}: ${outbox?.errorMessage ?? 'disabled'}`,
+        );
+        throw new ServiceUnavailableException(
+          'ارسال پیامک در حال حاضر ممکن نیست. کمی بعد دوباره تلاش کنید یا با پشتیبانی تماس بگیرید.',
+        );
+      }
+      this.logger.warn('SMS disabled; exposing temporary password only in non-production');
+    }
+
+    user.passwordHash = await bcrypt.hash(tempPassword, 12);
+    user.mustChangePassword = true;
+    await this.userRepo.save(user);
+    await this.refreshTokenRepo.update(
+      { userId: user.id, revokedAt: IsNull() },
+      { revokedAt: new Date() },
+    );
+
     await this.auditService.log({
       userId: user.id,
       organizationId: user.organizationId,
-      action: 'auth.password_reset_request',
+      action: 'auth.password_reset_sms',
       resource: 'auth',
       resourceId: user.id,
+      payload: { phone: maskPhoneForDisplay(user.phone), via: 'sms' },
     });
-    return { success: true, message };
+
+    return {
+      success: true,
+      message: 'رمز موقت به شماره همراه شما پیامک شد.',
+      ...(exposePlain && !smsOk ? { devPassword: tempPassword } : {}),
+    };
   }
 
   async resetPassword(dto: ResetPasswordDto): Promise<{ success: true }> {
@@ -409,6 +444,33 @@ export class AuthService {
       where: { username: lower },
       relations: ['userRoles', 'userRoles.role'],
     });
+  }
+
+  private async findUserByPhone(phoneRaw: string): Promise<User | null> {
+    let variants = iranMobileLookupVariants(phoneRaw);
+    if (!variants.length) {
+      const normalized = toIranMobile(phoneRaw);
+      if (normalized) variants = iranMobileLookupVariants(normalized);
+    }
+    if (!variants.length) return null;
+    return this.userRepo.findOne({
+      where: variants.map((phone) => ({ phone })),
+    });
+  }
+
+  private generateTempPassword(): string {
+    const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const lower = 'abcdefghijkmnopqrstuvwxyz';
+    const digits = '23456789';
+    const pick = (alphabet: string) => alphabet[crypto.randomInt(0, alphabet.length)];
+    const base = [pick(upper), pick(lower), pick(digits)];
+    const all = upper + lower + digits;
+    while (base.length < 10) base.push(pick(all));
+    for (let i = base.length - 1; i > 0; i -= 1) {
+      const j = crypto.randomInt(0, i + 1);
+      [base[i], base[j]] = [base[j], base[i]];
+    }
+    return base.join('');
   }
 
   private async issueSession(

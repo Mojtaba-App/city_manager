@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   APP_NAME,
@@ -9,6 +9,7 @@ import {
   formatCountdownMmSs,
   LOGIN_CONTACT_ADMIN_MESSAGE,
   resolvePostLoginRoute,
+  validateIranMobile,
   validateLoginInput,
   validateLoginOtpCode,
   validateUserPassword,
@@ -32,14 +33,18 @@ type LoginMode = 'login' | 'forgot' | 'reset';
 
 export default function LoginPage() {
   const router = useRouter();
+  const formId = useId();
   const [mode, setMode] = useState<LoginMode>('login');
   const [resetToken, setResetToken] = useState('');
   const [identifier, setIdentifier] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
+  const [devPassword, setDevPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [otp, setOtp] = useState<LoginOtpChallenge | null>(null);
   const [otpCode, setOtpCode] = useState('');
@@ -58,6 +63,7 @@ export default function LoginPage() {
   const idField = LOGIN_FIELDS.identifier;
   const passField = LOGIN_FIELDS.password;
   const otpField = LOGIN_FIELDS.otp;
+  const phoneField = LOGIN_FIELDS.phone;
   const lockSec = Math.max(0, Math.ceil((lockUntil - now) / 1000));
   const resendSec = Math.max(0, Math.ceil((resendUntil - now) / 1000));
   const locked = lockSec > 0;
@@ -74,7 +80,7 @@ export default function LoginPage() {
       }
     };
     window.addEventListener('keydown', onKey);
-    const card = document.querySelector('.login-card');
+    const card = document.querySelector('.md-login-card');
     if (card) card.setAttribute('inert', '');
     const otpInput = document.getElementById('otp') as HTMLInputElement | null;
     otpInput?.focus();
@@ -165,7 +171,7 @@ export default function LoginPage() {
       }
       await finishLogin();
     } catch {
-      setError('ارتباط با سرور برقرار نشد');
+      setError('ارتباط با سرور برقرار نشد. چند ثانیه صبر کنید و دوباره وارد شوید.');
     } finally {
       setLoading(false);
     }
@@ -193,7 +199,7 @@ export default function LoginPage() {
       setLockUntil(0);
       await finishLogin();
     } catch {
-      setError('ارتباط با سرور برقرار نشد');
+      setError('ارتباط با سرور برقرار نشد. چند ثانیه صبر کنید و دوباره وارد شوید.');
     } finally {
       setLoading(false);
     }
@@ -211,7 +217,7 @@ export default function LoginPage() {
       }
       startOtp(result.data);
     } catch {
-      setError('ارتباط با سرور برقرار نشد');
+      setError('ارتباط با سرور برقرار نشد. چند ثانیه صبر کنید و دوباره وارد شوید.');
     } finally {
       setLoading(false);
     }
@@ -221,21 +227,26 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     setInfo('');
-    if (!identifier.trim()) {
-      setFieldErrors({ identifier: 'شناسه الزامی است' });
+    setDevPassword('');
+    const phoneErr = validateIranMobile(phone, true);
+    if (phoneErr) {
+      setFieldErrors({ phone: phoneErr });
       return;
     }
     setFieldErrors({});
     setLoading(true);
     try {
-      const result = await forgotPassword(identifier.trim());
+      const result = await forgotPassword(phone.trim());
       if (!result.success) {
-        setError(result.error?.message ?? 'درخواست بازیابی ناموفق بود');
+        const msg = result.error?.message ?? 'درخواست بازیابی ناموفق بود';
+        setError(msg);
+        setFieldErrors({ phone: msg });
         return;
       }
-      setInfo(result.data?.message ?? 'اگر حسابی وجود داشته باشد، لینک بازیابی ارسال می‌شود.');
+      setInfo(result.data?.message ?? 'رمز موقت به شماره همراه شما پیامک شد.');
+      if (result.data?.devPassword) setDevPassword(result.data.devPassword);
     } catch {
-      setError('ارتباط با سرور برقرار نشد');
+      setError('ارتباط با سرور برقرار نشد. چند ثانیه صبر کنید و دوباره وارد شوید.');
     } finally {
       setLoading(false);
     }
@@ -269,7 +280,7 @@ export default function LoginPage() {
       setResetToken('');
       router.replace('/login');
     } catch {
-      setError('ارتباط با سرور برقرار نشد');
+      setError('ارتباط با سرور برقرار نشد. چند ثانیه صبر کنید و دوباره وارد شوید.');
     } finally {
       setLoading(false);
     }
@@ -292,53 +303,47 @@ export default function LoginPage() {
       ? `ورود پس از ۳ تلاش ناموفق مسدود شد. ${formatCountdownMmSs(lockSec)} تا رفع مسدودی.`
       : '';
 
+  const modeTitle =
+    mode === 'forgot' ? 'بازیابی رمز عبور' : mode === 'reset' ? 'تنظیم رمز جدید' : subtitle;
+
   return (
     <div
-      className="login-page"
-      style={{ backgroundImage: `linear-gradient(135deg, rgba(10, 30, 40, 0.62), rgba(8, 24, 32, 0.72)), url(${bgUrl})` }}
+      className="md-login-page"
+      style={{
+        backgroundImage: `linear-gradient(160deg, rgba(15, 23, 42, 0.72), rgba(15, 118, 110, 0.45)), url(${bgUrl})`,
+      }}
     >
       {otp && (
-        <div className="login-otp-banner" aria-live="polite">
-          <span className="login-otp-banner-label">کد تأیید ارسال شد به</span>
-          <strong className="login-otp-banner-phone" dir="ltr">{otp.maskedPhone}</strong>
-        </div>
-      )}
-
-      {otp && (
         <div
-          className="login-otp-modal"
+          className="md-login-otp-modal"
           role="dialog"
           aria-modal="true"
           aria-labelledby="login-otp-title"
           aria-describedby="login-otp-desc"
         >
-          <div className="login-otp-card">
+          <div className="md-login-otp-card md-elevation-3">
             <h2 id="login-otp-title">تأیید شماره همراه</h2>
-            <p id="login-otp-desc" className="muted login-otp-phone-line">
-              کد تأیید به شماره زیر ارسال شد:
+            <p id="login-otp-desc" className="md-login-support">
+              کد تأیید به شماره زیر ارسال شد
             </p>
-            <p className="login-otp-phone-masked" dir="ltr" aria-label={`شماره masked ${otp.maskedPhone}`}>
-              {otp.maskedPhone}
-            </p>
+            <p className="md-login-phone-masked" dir="ltr">{otp.maskedPhone}</p>
             {otp.devCode && (
-              <div className="login-otp-dev" role="status" aria-live="polite">
-                <span>حالت توسعه / تست — کد:</span>
+              <div className="md-login-dev" role="status" aria-live="polite">
+                <span>حالت توسعه — کد:</span>
                 <code dir="ltr">{otp.devCode}</code>
-                <button type="button" className="btn btn-sm" onClick={() => void copyDevCode()}>
+                <button type="button" className="md-btn md-btn-text" onClick={() => void copyDevCode()}>
                   {otpCopied ? 'کپی شد' : 'کپی'}
                 </button>
               </div>
             )}
             <form onSubmit={(e) => void handleVerifyOtp(e)} noValidate>
-              <div className="form-group">
-                <label htmlFor="otp">{otpField.label}</label>
+              <div className={`md-field${fieldErrors.otp ? ' md-field-error' : ''}`}>
                 <input
                   id="otp"
+                  className="md-field-input"
+                  placeholder=" "
                   inputMode={otpField.inputMode}
                   autoComplete={otpField.autoComplete}
-                  placeholder={otpField.placeholder}
-                  title={otpField.hint}
-                  aria-describedby="otp-hint"
                   aria-invalid={Boolean(fieldErrors.otp)}
                   aria-required="true"
                   value={otpCode}
@@ -352,22 +357,23 @@ export default function LoginPage() {
                   disabled={loginBlocked}
                   autoFocus
                 />
-                <span id="otp-hint" className="field-hint">{otpField.hint}</span>
-                {fieldErrors.otp && <p className="error-message" role="alert">{fieldErrors.otp}</p>}
+                <label htmlFor="otp" className="md-field-label">{otpField.label}</label>
+                <span className="md-field-hint">{otpField.hint}</span>
+                {fieldErrors.otp && <p className="md-field-error-text" role="alert">{fieldErrors.otp}</p>}
               </div>
-              {(error || lockHint) && <p className="error-message" role="alert">{lockHint || error}</p>}
-              <p className="login-otp-resend" aria-live="polite">
+              {(error || lockHint) && <p className="md-alert md-alert-error" role="alert">{lockHint || error}</p>}
+              <p className="md-login-support" aria-live="polite">
                 {resendSec > 0
-                  ? `ارسال مجدد تا ${formatCountdownMmSs(resendSec)} دیگر ممکن نیست.`
-                  : 'می‌توانید کد را دوباره ارسال کنید.'}
+                  ? `ارسال مجدد تا ${formatCountdownMmSs(resendSec)}`
+                  : 'می‌توانید کد را دوباره ارسال کنید'}
               </p>
-              <div className="login-otp-actions">
-                <button type="submit" className="btn btn-primary" disabled={loading || loginBlocked}>
+              <div className="md-login-actions">
+                <button type="submit" className="md-btn md-btn-filled" disabled={loading || loginBlocked}>
                   {loading ? 'در حال تأیید…' : 'تأیید و ورود'}
                 </button>
                 <button
                   type="button"
-                  className="btn"
+                  className="md-btn md-btn-outlined"
                   disabled={loading || resendSec > 0 || loginBlocked}
                   onClick={() => void handleResendOtp()}
                 >
@@ -375,7 +381,7 @@ export default function LoginPage() {
                 </button>
                 <button
                   type="button"
-                  className="btn"
+                  className="md-btn md-btn-text"
                   disabled={loading}
                   onClick={() => { setOtp(null); setOtpCode(''); setError(''); setFieldErrors({}); }}
                 >
@@ -387,151 +393,204 @@ export default function LoginPage() {
         </div>
       )}
 
-      <p className="login-hero-tagline">{heroTagline}</p>
-      <div className="login-card">
-        {iconUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={iconUrl} alt="" className="login-brand-icon" />
-        ) : (
-          <div className="login-brand-fallback" aria-hidden>{markText}</div>
-        )}
-        <h1 className="login-card-brand">{brandTitle}</h1>
-        <p className="login-card-subtitle">
-          {mode === 'forgot' ? 'بازیابی رمز عبور' : mode === 'reset' ? 'تنظیم رمز جدید' : subtitle}
-        </p>
-        {mode === 'forgot' ? (
-          <form onSubmit={(e) => void handleForgot(e)} noValidate>
-            <div className="form-group">
-              <label htmlFor="identifier">{idField.label}</label>
-              <input
-                id="identifier"
-                type="text"
-                value={identifier}
-                onChange={(e) => {
-                  setIdentifier(e.target.value);
-                  setFieldErrors((prev) => ({ ...prev, identifier: '' }));
-                }}
-                required
-                autoComplete={idField.autoComplete}
-                dir={idField.dir}
-                placeholder={idField.placeholder}
-              />
-              {fieldErrors.identifier && <p className="error-message">{fieldErrors.identifier}</p>}
-            </div>
-            {error && <p className="error-message">{error}</p>}
-            {info && <p className="admin-toast">{info}</p>}
-            <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
-              {loading ? 'در حال ارسال…' : 'ارسال لینک بازیابی'}
-            </button>
-            <button
-              type="button"
-              className="btn"
-              style={{ width: '100%', marginTop: '0.5rem' }}
-              onClick={() => { setMode('login'); setError(''); setInfo(''); }}
-            >
-              بازگشت به ورود
-            </button>
-          </form>
-        ) : mode === 'reset' ? (
-          <form onSubmit={(e) => void handleReset(e)} noValidate>
-            <div className="form-group">
-              <label htmlFor="password">رمز جدید</label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setFieldErrors((prev) => ({ ...prev, password: '' }));
-                }}
-                required
-                autoComplete="new-password"
-                minLength={8}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="confirmPassword">تکرار رمز جدید</label>
-              <input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                autoComplete="new-password"
-                minLength={8}
-              />
-              {fieldErrors.password && <p className="error-message">{fieldErrors.password}</p>}
-            </div>
-            {error && <p className="error-message">{error}</p>}
-            {info && <p className="admin-toast">{info}</p>}
-            <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading || !resetToken}>
-              {loading ? 'در حال ذخیره…' : 'ذخیره رمز جدید'}
-            </button>
-          </form>
-        ) : (
-        <form onSubmit={(e) => void handleSubmit(e)} noValidate>
-          <div className="form-group">
-            <label htmlFor="identifier">{idField.label}</label>
-            <input
-              id="identifier"
-              type="text"
-              value={identifier}
-              onChange={(e) => {
-                setIdentifier(e.target.value);
-                setFieldErrors((prev) => ({ ...prev, identifier: '' }));
-              }}
-              required
-              autoComplete={idField.autoComplete}
-              dir={idField.dir}
-              placeholder={idField.placeholder}
-              title={idField.hint}
-              aria-describedby="identifier-hint"
-              aria-invalid={Boolean(fieldErrors.identifier)}
-              disabled={loginBlocked}
-            />
-            <span id="identifier-hint" className="field-hint">{idField.hint}</span>
-            {fieldErrors.identifier && <p className="error-message">{fieldErrors.identifier}</p>}
+      <main className="md-login-shell">
+        <section className="md-login-card md-elevation-2" aria-labelledby={`${formId}-brand`}>
+          <div className="md-login-brand">
+            {iconUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={iconUrl} alt="" className="md-login-brand-icon" />
+            ) : (
+              <div className="md-login-brand-mark" aria-hidden>{markText}</div>
+            )}
+            <h1 id={`${formId}-brand`} className="md-login-brand-title">{brandTitle}</h1>
+            <p className="md-login-brand-sub">{modeTitle}</p>
+            {mode === 'login' && <p className="md-login-tagline">{heroTagline}</p>}
           </div>
-          <div className="form-group">
-            <label htmlFor="password">{passField.label}</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                setFieldErrors((prev) => ({ ...prev, password: '' }));
-              }}
-              required
-              autoComplete={passField.autoComplete}
-              placeholder={passField.placeholder}
-              title={passField.hint}
-              aria-describedby="password-hint"
-              aria-invalid={Boolean(fieldErrors.password)}
-              disabled={loginBlocked}
-            />
-            <span id="password-hint" className="field-hint">{passField.hint}</span>
-            {fieldErrors.password && <p className="error-message">{fieldErrors.password}</p>}
-          </div>
-          {error && !otp && <p className="error-message">{lockHint || error}</p>}
-          {!error && lockHint && !otp && <p className="error-message">{lockHint}</p>}
-          {info && <p className="admin-toast">{info}</p>}
-          <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading || Boolean(otp) || loginBlocked}>
-            {loading ? 'در حال ورود...' : locked ? `مسدود تا ${formatCountdownMmSs(lockSec)}` : 'ورود'}
-          </button>
-          <button
-            type="button"
-            className="btn"
-            style={{ width: '100%', marginTop: '0.5rem' }}
-            onClick={() => { setMode('forgot'); setError(''); setInfo(''); setOtp(null); }}
-          >
-            فراموشی رمز عبور
-          </button>
-        </form>
-        )}
-      </div>
-      <div className="login-version" title={`نسخه ${APP_VERSION}`}>
-        نسخه {APP_VERSION}
+
+          {mode === 'forgot' ? (
+            <form onSubmit={(e) => void handleForgot(e)} noValidate className="md-login-form">
+              <p className="md-login-support">
+                شماره همراه ثبت‌شده در حساب را وارد کنید تا رمز موقت پیامک شود.
+              </p>
+              <div className={`md-field${fieldErrors.phone ? ' md-field-error' : ''}`}>
+                <input
+                  id="phone"
+                  className="md-field-input"
+                  placeholder=" "
+                  type="tel"
+                  inputMode={phoneField.inputMode}
+                  autoComplete={phoneField.autoComplete}
+                  dir={phoneField.dir}
+                  value={phone}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    setFieldErrors((prev) => ({ ...prev, phone: '' }));
+                  }}
+                  aria-invalid={Boolean(fieldErrors.phone)}
+                  required
+                />
+                <label htmlFor="phone" className="md-field-label">{phoneField.label}</label>
+                <span className="md-field-hint">{phoneField.hint}</span>
+                {fieldErrors.phone && <p className="md-field-error-text" role="alert">{fieldErrors.phone}</p>}
+              </div>
+              {error && <p className="md-alert md-alert-error" role="alert">{error}</p>}
+              {info && <p className="md-alert md-alert-info" role="status">{info}</p>}
+              {devPassword && (
+                <div className="md-login-dev" role="status">
+                  <span>حالت توسعه — رمز موقت:</span>
+                  <code dir="ltr">{devPassword}</code>
+                </div>
+              )}
+              <div className="md-login-actions">
+                <button type="submit" className="md-btn md-btn-filled" disabled={loading}>
+                  {loading ? 'در حال ارسال…' : 'ارسال رمز موقت با پیامک'}
+                </button>
+                <button
+                  type="button"
+                  className="md-btn md-btn-text"
+                  onClick={() => {
+                    setMode('login');
+                    setError('');
+                    setInfo('');
+                    setDevPassword('');
+                    setFieldErrors({});
+                  }}
+                >
+                  بازگشت به ورود
+                </button>
+              </div>
+            </form>
+          ) : mode === 'reset' ? (
+            <form onSubmit={(e) => void handleReset(e)} noValidate className="md-login-form">
+              <div className={`md-field${fieldErrors.password ? ' md-field-error' : ''}`}>
+                <input
+                  id="password"
+                  className="md-field-input"
+                  placeholder=" "
+                  type="password"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setFieldErrors((prev) => ({ ...prev, password: '' }));
+                  }}
+                  required
+                  autoComplete="new-password"
+                  minLength={8}
+                />
+                <label htmlFor="password" className="md-field-label">رمز جدید</label>
+              </div>
+              <div className="md-field">
+                <input
+                  id="confirmPassword"
+                  className="md-field-input"
+                  placeholder=" "
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  autoComplete="new-password"
+                  minLength={8}
+                />
+                <label htmlFor="confirmPassword" className="md-field-label">تکرار رمز جدید</label>
+                {fieldErrors.password && <p className="md-field-error-text" role="alert">{fieldErrors.password}</p>}
+              </div>
+              {error && <p className="md-alert md-alert-error" role="alert">{error}</p>}
+              {info && <p className="md-alert md-alert-info" role="status">{info}</p>}
+              <button type="submit" className="md-btn md-btn-filled" disabled={loading || !resetToken}>
+                {loading ? 'در حال ذخیره…' : 'ذخیره رمز جدید'}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={(e) => void handleSubmit(e)} noValidate className="md-login-form">
+              <div className={`md-field${fieldErrors.identifier ? ' md-field-error' : ''}`}>
+                <input
+                  id="identifier"
+                  className="md-field-input"
+                  placeholder=" "
+                  type="text"
+                  value={identifier}
+                  onChange={(e) => {
+                    setIdentifier(e.target.value);
+                    setFieldErrors((prev) => ({ ...prev, identifier: '' }));
+                  }}
+                  required
+                  autoComplete={idField.autoComplete}
+                  dir={idField.dir}
+                  aria-invalid={Boolean(fieldErrors.identifier)}
+                  disabled={loginBlocked}
+                />
+                <label htmlFor="identifier" className="md-field-label">{idField.label}</label>
+                {fieldErrors.identifier && (
+                  <p className="md-field-error-text" role="alert">{fieldErrors.identifier}</p>
+                )}
+              </div>
+
+              <div className={`md-field md-field-password${fieldErrors.password ? ' md-field-error' : ''}`}>
+                <input
+                  id="password"
+                  className="md-field-input"
+                  placeholder=" "
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setFieldErrors((prev) => ({ ...prev, password: '' }));
+                  }}
+                  required
+                  autoComplete={passField.autoComplete}
+                  aria-invalid={Boolean(fieldErrors.password)}
+                  disabled={loginBlocked}
+                />
+                <label htmlFor="password" className="md-field-label">{passField.label}</label>
+                <button
+                  type="button"
+                  className="md-field-trailing"
+                  aria-label={showPassword ? 'مخفی کردن رمز' : 'نمایش رمز'}
+                  onClick={() => setShowPassword((v) => !v)}
+                  tabIndex={-1}
+                >
+                  {showPassword ? 'مخفی' : 'نمایش'}
+                </button>
+                {fieldErrors.password && (
+                  <p className="md-field-error-text" role="alert">{fieldErrors.password}</p>
+                )}
+              </div>
+
+              {(error || lockHint) && !otp && (
+                <p className="md-alert md-alert-error" role="alert">{lockHint || error}</p>
+              )}
+              {info && <p className="md-alert md-alert-info" role="status">{info}</p>}
+
+              <div className="md-login-actions">
+                <button
+                  type="submit"
+                  className="md-btn md-btn-filled"
+                  disabled={loading || Boolean(otp) || loginBlocked}
+                >
+                  {loading ? 'در حال ورود…' : locked ? `مسدود تا ${formatCountdownMmSs(lockSec)}` : 'ورود'}
+                </button>
+                <button
+                  type="button"
+                  className="md-btn md-btn-text"
+                  onClick={() => {
+                    setMode('forgot');
+                    setError('');
+                    setInfo('');
+                    setDevPassword('');
+                    setOtp(null);
+                    setFieldErrors({});
+                  }}
+                >
+                  فراموشی رمز عبور
+                </button>
+              </div>
+            </form>
+          )}
+        </section>
+      </main>
+
+      <div className="md-login-version" title={`نسخه ${APP_VERSION}`}>
+        v{APP_VERSION}
       </div>
     </div>
   );

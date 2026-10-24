@@ -697,7 +697,7 @@ export function MapWorkspace() {
       style: buildInitialStyle(),
       center: GIS_DEFAULT_CENTER,
       zoom: GIS_DEFAULT_ZOOM,
-      preserveDrawingBuffer: true,
+      canvasContextAttributes: { preserveDrawingBuffer: true },
     });
     map.on('error', (e) => {
       const message = String((e as { error?: { message?: string } }).error?.message ?? '');

@@ -55,9 +55,9 @@ export function validatePhone(value: unknown, required = false): string | undefi
 
 export function validateIranMobile(value: unknown, required = false): string | undefined {
   if (isEmptyValue(value)) {
-    return required ? 'تلفن الزامی است' : undefined;
+    return required ? 'شماره همراه الزامی است' : undefined;
   }
-  if (!toIranMobile(value)) return 'شماره موبایل نامعتبر است';
+  if (!toIranMobile(value)) return 'شماره موبایل نامعتبر است (مثال: ۰۹۱۲۳۴۵۶۷۸۹)';
   return undefined;
 }
 

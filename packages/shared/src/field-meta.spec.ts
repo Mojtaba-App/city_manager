@@ -14,7 +14,8 @@ describe('field-meta', () => {
   it('exposes readable Persian labels and placeholders for login', () => {
     expect(LOGIN_FIELDS.identifier.label).toContain('ایمیل');
     expect(LOGIN_FIELDS.identifier.placeholder.length).toBeGreaterThan(5);
-    expect(LOGIN_FIELDS.password.hint).toBeTruthy();
+    expect(LOGIN_FIELDS.password.label).toBeTruthy();
+    expect(LOGIN_FIELDS.phone.label).toContain('همراه');
     expect(FIELD_LOGIN_IDENTIFIER.dir).toBe('ltr');
   });
 

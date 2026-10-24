@@ -26,6 +26,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - OTP login dialog a11y (focus, Escape, inert background)
 - Field channel: PermissionGate; removed legacy «اولویت ۳» copy
 - Nav `aria-current`; Next `allowedDevOrigins`
+- Dependencies (stable): NestJS 10 → **11**, MapLibre 4 → **5**, Next **16.4**, React **19.3**, bcrypt **6**, class-validator **0.15**, dotenv **17**; TypeORM stays **0.3.x**, TypeScript **5.9**, Jest **29** (ecosystem-safe)
+- JWT module options typed for `@nestjs/jwt` v11; MapLibre `canvasContextAttributes.preserveDrawingBuffer`
 
 ### Security
 - Webhook endpoints use ValidationPipe without stripping arbitrary JSON bodies

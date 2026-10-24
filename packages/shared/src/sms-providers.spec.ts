@@ -3,24 +3,32 @@ import {
   buildSmsConnectionProbe,
   buildSmsIrBulkBody,
   buildSmsIrBulkUrl,
+  iranMobileLookupVariants,
+  isIranMobile,
   isSmsIrProvider,
   normalizeIranMobile,
   parseSmsIrApiResult,
   smsProviderDefaultBase,
 } from './sms-providers';
 
-describe('sms.ir helpers', () => {
-  it('detects sms.ir by provider or host', () => {
+describe('sms-providers', () => {
+  it('detects sms.ir provider', () => {
     expect(isSmsIrProvider('smsir')).toBe(true);
     expect(isSmsIrProvider('sms.ir')).toBe(true);
     expect(isSmsIrProvider('custom', 'https://api.sms.ir/v1')).toBe(true);
     expect(isSmsIrProvider('kavenegar')).toBe(false);
   });
 
-  it('normalizes Iranian mobiles', () => {
+  it('normalizes Iranian mobiles including Persian digits', () => {
     expect(normalizeIranMobile('09123456789')).toBe('09123456789');
     expect(normalizeIranMobile('+98 912 345 6789')).toBe('09123456789');
     expect(normalizeIranMobile('9123456789')).toBe('09123456789');
+    expect(normalizeIranMobile('۰۹۱۲۳۴۵۶۷۸۹')).toBe('09123456789');
+    expect(isIranMobile('09123456789')).toBe(true);
+    expect(isIranMobile('123')).toBe(false);
+    expect(iranMobileLookupVariants('09123456789')).toEqual(
+      expect.arrayContaining(['09123456789', '9123456789', '+989123456789']),
+    );
   });
 
   it('builds bulk send payload and credit probe', () => {

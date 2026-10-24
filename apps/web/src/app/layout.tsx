@@ -29,7 +29,7 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <BrandingHead />
         {children}
       </body>

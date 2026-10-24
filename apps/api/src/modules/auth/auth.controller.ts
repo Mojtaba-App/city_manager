@@ -122,10 +122,16 @@ export class AuthController {
   @Post('forgot-password')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'درخواست بازیابی رمز عبور' })
-  async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<ApiResponse<{ message: string }>> {
+  @ApiOperation({ summary: 'بازیابی رمز عبور با پیامک به شماره همراه' })
+  async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<ApiResponse<{ message: string; devPassword?: string }>> {
     const data = await this.authService.forgotPassword(dto);
-    return { success: true, data: { message: data.message } };
+    return {
+      success: true,
+      data: {
+        message: data.message,
+        ...(data.devPassword ? { devPassword: data.devPassword } : {}),
+      },
+    };
   }
 
   @Public()

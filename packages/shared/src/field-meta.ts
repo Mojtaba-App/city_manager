@@ -125,9 +125,14 @@ export const ADMIN_USER_FIELDS = {
 
 /** Bundle used by login page */
 export const LOGIN_FIELDS = {
-  identifier: FIELD_LOGIN_IDENTIFIER,
-  password: FIELD_PASSWORD,
+  identifier: { ...FIELD_LOGIN_IDENTIFIER, hint: undefined },
+  password: { ...FIELD_PASSWORD, hint: undefined, placeholder: '••••••••' },
   otp: FIELD_OTP,
+  phone: {
+    ...FIELD_PHONE,
+    hint: 'شماره همراه ثبت‌شده در حساب کاربری',
+    placeholder: '۰۹۱۲۳۴۵۶۷۸۹',
+  },
 } as const;
 
 export const FIELD_CONNECTOR_CODE: FieldMeta = {

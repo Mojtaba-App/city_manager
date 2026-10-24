@@ -1,9 +1,11 @@
 /** Geometry helpers for GIS draw tools (lng/lat WGS84) */
 
+import type { Geometry, LineString, Point, Polygon } from 'geojson';
+
 export type LngLat = [number, number];
 export { parseCoordinateText } from '@city-manager/shared';
 
-export function rectanglePolygon(a: LngLat, b: LngLat): GeoJSON.Polygon {
+export function rectanglePolygon(a: LngLat, b: LngLat): Polygon {
   const minLng = Math.min(a[0], b[0]);
   const maxLng = Math.max(a[0], b[0]);
   const minLat = Math.min(a[1], b[1]);
@@ -21,7 +23,7 @@ export function rectanglePolygon(a: LngLat, b: LngLat): GeoJSON.Polygon {
 }
 
 /** Axis-aligned square using the larger delta of the two corners */
-export function squarePolygon(a: LngLat, b: LngLat): GeoJSON.Polygon {
+export function squarePolygon(a: LngLat, b: LngLat): Polygon {
   const dx = Math.abs(b[0] - a[0]);
   const dy = Math.abs(b[1] - a[1]);
   const size = Math.max(dx, dy);
@@ -31,7 +33,7 @@ export function squarePolygon(a: LngLat, b: LngLat): GeoJSON.Polygon {
 }
 
 /** Approximate circle in degrees (good enough for city-scale sketches) */
-export function circlePolygon(center: LngLat, edge: LngLat, steps = 64): GeoJSON.Polygon {
+export function circlePolygon(center: LngLat, edge: LngLat, steps = 64): Polygon {
   const latRad = (center[1] * Math.PI) / 180;
   const dx = (edge[0] - center[0]) * Math.cos(latRad);
   const dy = edge[1] - center[1];
@@ -46,18 +48,18 @@ export function circlePolygon(center: LngLat, edge: LngLat, steps = 64): GeoJSON
   return { type: 'Polygon', coordinates: [ring] };
 }
 
-export function lineString(points: LngLat[]): GeoJSON.LineString {
+export function lineString(points: LngLat[]): LineString {
   return { type: 'LineString', coordinates: points };
 }
 
-export function pointGeometry(p: LngLat): GeoJSON.Point {
+export function pointGeometry(p: LngLat): Point {
   return { type: 'Point', coordinates: p };
 }
 
 export function pointsToGeometry(
   points: LngLat[],
   kind: 'point' | 'line' | 'polygon',
-): GeoJSON.Geometry | null {
+): Geometry | null {
   if (kind === 'point') {
     if (!points[0]) return null;
     return pointGeometry(points[0]);

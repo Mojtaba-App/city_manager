@@ -1,4 +1,4 @@
-import { UnauthorizedException } from '@nestjs/common';
+import { UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
@@ -52,6 +52,7 @@ describe('AuthService', () => {
     isActive: true,
     organizationId: 'org1',
     phone: undefined as string | undefined,
+    mustChangePassword: false,
     userRoles: [{ role: { code: SystemRole.ORG_ADMIN } }],
   };
 
@@ -62,6 +63,7 @@ describe('AuthService', () => {
     refreshTokenRepo.create.mockImplementation((v: unknown) => v);
     userRepo.save.mockImplementation(async (v: unknown) => v);
     user.phone = undefined;
+    user.mustChangePassword = false;
     messaging.sendEvent.mockResolvedValue({ status: MessageOutboxStatus.SENT });
   });
 
@@ -156,5 +158,35 @@ describe('AuthService', () => {
     expect(profile.permissions).toContain('share_views:manage');
     expect(profile.permissions).toContain('share_views:read');
     expect(profile.permissions).toContain('reports:write');
+  });
+
+  it('forgot-password by phone generates temp password and sends SMS', async () => {
+    user.phone = '09123456789';
+    userRepo.findOne.mockResolvedValue(user);
+    (bcrypt.hash as jest.Mock).mockResolvedValue('new-hash');
+    refreshTokenRepo.update.mockResolvedValue({ affected: 1 });
+
+    const res = await svc.forgotPassword({ phone: '09123456789' });
+    expect(res.success).toBe(true);
+    expect(res.message).toMatch(/پیامک/);
+    expect(messaging.sendEvent).toHaveBeenCalledWith(
+      'org1',
+      'u1',
+      expect.objectContaining({
+        event: 'password_reset',
+        channel: 'sms',
+        recipient: '09123456789',
+      }),
+    );
+    expect(userRepo.save).toHaveBeenCalled();
+    expect(user.mustChangePassword).toBe(true);
+  });
+
+  it('forgot-password rejects unknown phone', async () => {
+    userRepo.findOne.mockResolvedValue(null);
+    await expect(svc.forgotPassword({ phone: '09121111111' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    expect(messaging.sendEvent).not.toHaveBeenCalled();
   });
 });

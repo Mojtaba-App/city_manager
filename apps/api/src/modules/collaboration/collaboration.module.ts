@@ -21,6 +21,7 @@ import { FieldChannelService } from './services/field-channel.service';
 import { ShareViewsService } from './services/share-views.service';
 import { StorageModule } from '../storage/storage.module';
 import { PresenceModule } from '../presence/presence.module';
+import { buildJwtModuleOptions } from '../../common/jwt-module-options';
 
 @Module({
   imports: [
@@ -33,12 +34,7 @@ import { PresenceModule } from '../presence/presence.module';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET'),
-        signOptions: {
-          expiresIn: config.get<string>('JWT_EXPIRES_IN', '15m'),
-        },
-      }),
+      useFactory: (config: ConfigService) => buildJwtModuleOptions(config),
     }),
   ],
   controllers: [CollaborationController],

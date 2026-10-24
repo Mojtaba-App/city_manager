@@ -1,4 +1,7 @@
 declare module '@mapbox/mapbox-gl-draw' {
+  import type { Feature, FeatureCollection, Geometry } from 'geojson';
+  import type { Map } from 'maplibre-gl';
+
   interface MapboxDrawOptions {
     displayControlsDefault?: boolean;
     controls?: Record<string, boolean>;
@@ -12,12 +15,12 @@ declare module '@mapbox/mapbox-gl-draw' {
 
   export default class MapboxDraw {
     constructor(options?: MapboxDrawOptions);
-    onAdd(map: maplibregl.Map): HTMLElement;
-    onRemove(map: maplibregl.Map): void;
+    onAdd(map: Map): HTMLElement;
+    onRemove(map: Map): void;
     changeMode(mode: string, options?: object): void;
-    getAll(): GeoJSON.FeatureCollection;
+    getAll(): FeatureCollection;
     deleteAll(): void;
-    add(feature: GeoJSON.Feature | GeoJSON.FeatureCollection | GeoJSON.Geometry): string[];
+    add(feature: Feature | FeatureCollection | Geometry): string[];
     delete(ids: string | string[]): this;
     getSelectedIds(): string[];
     getMode(): string;

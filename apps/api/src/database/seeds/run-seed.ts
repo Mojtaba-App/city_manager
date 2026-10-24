@@ -83,6 +83,7 @@ async function seed() {
       passwordHash: await bcrypt.hash('Admin@1234', 12),
       firstName: 'مدیر',
       lastName: 'سیستم',
+      phone: '09120000000',
       organizationId: org.id,
       isActive: true,
       isEmailVerified: true,
@@ -97,6 +98,12 @@ async function seed() {
     admin.username = 'admin';
     await userRepo.save(admin);
     console.log('Backfilled admin username: admin');
+  }
+
+  if (admin && !admin.phone) {
+    admin.phone = '09120000000';
+    await userRepo.save(admin);
+    console.log('Backfilled admin phone: 09120000000 (برای OTP / فراموشی رمز)');
   }
 
   for (const a of defaultAgencies) {
