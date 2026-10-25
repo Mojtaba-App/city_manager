@@ -8,7 +8,7 @@
     "dev:api": "pnpm --filter @city-manager/api dev",
     "dev:web": "pnpm --filter @city-manager/web dev",
     "build": "pnpm --filter @city-manager/shared build && pnpm --filter @city-manager/api-client build && pnpm --filter @city-manager/api build && pnpm --filter @city-manager/web build",
-    "lint": "pnpm -r lint",
+    "lint": "pnpm --filter @city-manager/shared build && pnpm -r lint",
     "test": "pnpm --filter @city-manager/shared test && pnpm --filter @city-manager/api test && pnpm --filter @city-manager/api-client test",
     "test:e2e": "pnpm --filter @city-manager/web test:e2e",
     "db:migrate": "pnpm --filter @city-manager/api migration:run"
